@@ -1,7 +1,7 @@
 from __future__ import division, print_function
 import urllib2
 import json
-
+import httplib
 
 CLIENT_ID = None#FILL IN THE CLIENT ID
 REDIRECT_URI = None#FILL IN THE REDIRECT URI
@@ -19,20 +19,21 @@ class FSUser:
     
     def __init__(self, code):
         '''Given a code, query the user's id, username, and access token and store these'''
-        return
         response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
-
 
         data = json.loads(response.read())
         access_token = data['access_token']
-        self.fsq_id = data['response']['user']['id']
-        self.fsq_username = data['response']['user']['contact']['twitter']
+        self.id = data['response']['user']['id']
+        self.username = data['response']['user']['contact']['twitter']
         self.access_token = data['access_token']
         
         #TODO cache this
     def first_name(self):
-        '''Return the user's first name''''
+        '''Return the user's first name'''
         return data['response']['user']['firstName']
+
+    def last_name(self):
+        return data['response']['user']['lastName']
 
     def gender(self):
         return data['response']['user']['gender']
@@ -58,9 +59,9 @@ class FSUser:
 
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
-        return data['response']['user']['mayorships']['count]
+        return data['response']['user']['mayorships']['count']
 
-    def last_checkin(self):
+    #def last_checkin(self):
 
     
 
