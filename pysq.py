@@ -200,7 +200,29 @@ class Venue:
     def url(self):
         return self.data['response']['venue']['url']
         
-        
+       
+
+class Photo:
+
+    def __init__(self, authenticator, json_query):
+        self.authenticator = authenticator
+        aasdasfa
+
+
+    def id(self):
+        return self.data['response']['photo']['id']
+
+    def createdAd(self):
+        return self.data['response']['photo']['createdAd']
+
+    def url(self):
+        return self.data['response']['photo']['url']
+
+
+
+
+
+
 
 class Location:
 
