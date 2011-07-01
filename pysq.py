@@ -15,11 +15,8 @@ class FSAuthenticator:
         return 'https://foursquare.com/oauth2/authenticate?client_id=' + CLIENT_ID + '&response_type=code&redirect_uri='+ REDIRECT_URI
 
     def get_token(code):
-        pass
-        pass
         #make http request to foursquare to get the access token from the code
-        #make urllib2 request to this url
-        "https://foursquare.com/oauth2/access_token?client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&grant_type=authorization_code&redirect_uri=YOUR_REGISTERED_REDIRECT_URI&code=CODE"
+        urllib2.open("https://foursquare.com/oauth2/access_token?client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&grant_type=authorization_code&redirect_uri=YOUR_REGISTERED_REDIRECT_URI&code=CODE")
         #Response will contain access token
         self.access_token = access_token
         return access_token
@@ -220,11 +217,24 @@ class Photo:
 
 
 
+class Tip:
+
+    def __init__(self, authenticator, json_query):
+        self.authenticator = authenticator
+
+    def id(self):
+        return self.data['response']['tip']['id']
+
+    def createdAt(self):
+        return self.data['response']['tip']['createdAt']
+
+    def text(self):
+        return self.data['response']['tip']['text']
 
 
 
 
-class Location:
+
 
 
 
