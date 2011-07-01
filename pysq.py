@@ -55,38 +55,113 @@ class FSUser:
         #TODO cache this
     def first_name(self):
         '''Return the user's first name'''
-        return data['response']['user']['firstName']
+        return self.data['response']['user']['firstName']
 
     def last_name(self):
-        return data['response']['user']['lastName']
+        return self.data['response']['user']['lastName']
 
     def gender(self):
-        return data['response']['user']['gender']
+        return self.data['response']['user']['gender']
 
     def twitter(self):
         '''Load the user's Twitter contact information'''
-        return data['response']['user']['contact']['twitter']
+        return self.data['response']['user']['contact']['twitter']
  
     def facebook(self):
         '''Load the user's Twitter contact information'''
-        return data['response']['user']['contact']['facebook']
+        return self.data['response']['user']['contact']['facebook']
 
     def phone(self):
         '''Load the user's Twitter contact information'''
-        return data['response']['user']['contact']['phone']
+        return self.data['response']['user']['contact']['phone']
 
     def badge_count(self):
         '''Return the number of badgers that the user has earned'''
-        return data['response']['user']['badges']['count']
+        return self.data['response']['user']['badges']['count']
 
     #def all_checkins(self):
         '''Return the user's checkins'''
 
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
-        return data['response']['user']['mayorships']['count']
+        return self.data['response']['user']['mayorships']['count']
 
-    #def last_checkin(self):
+
+    def mayorships(self):
+        '''Returns the mayorships that the user has earned'''
+        return self.data['response']['user']['mayorships']['items'] 
+
+
+    def checkins_count(self):
+        '''Returns the number of checkins'''
+        return self.data['response']['user']['checkins']['count']
+
 
     
 
+
+    #def last_checkin(self):
+
+    def following(self):
+        return self.data['response']['user']['following'['count']  
+
+    def tips_count(self):
+        '''Return the number of tips that the user has left'''
+        return self.data['response']['user']['tips']['count']
+
+    def todos_count(self):
+        return self.data['response']['user']['todos']['count']
+
+    def recent_scores(self):
+        return self.data['response']['user']['scores']['recent']
+
+    def max_scores(self):
+        return self.data['response']['user']['scores']['max']
+
+
+
+
+
+
+class Checkin:
+    
+    def __init__(self, authenticator, json_query):
+    
+        #TODO #FIXME
+        response 
+        self.authenticator = authenticator
+
+    def id(self):
+        '''Return the id of the checkin'''
+        return self.data['response']['checkin']['id']
+
+    def createdAt(self):
+        '''Return the Unix timestamp of the checkin'''
+        return self.data['response']['checkin']['createdAt']
+
+    def timeZone(self):
+        '''Return the timezone of the checkin'''
+        return self.data['response']['checkin']['timeZone']
+
+    def type(self):
+        '''Return the type of the checkin'''
+        return self.data['response']['checkin']['type']
+
+    def hasShout(self):
+        return self.type() == "shout"
+
+    def shout(self):
+        '''Return any shout associated with the checkin'''
+        return self.data['response']['checkin']['shout']
+
+    def venue(self):
+        '''Return the Venue object associated with the checkin'''
+        return Venue(self.authenticator, self.data['response']['checkin']['venue']
+
+    def hasPhotos(self):
+        '''Return True if any photos are associated with this checkin'''
+        return self.data['response']['checkin']['photos']['count'] > 0
+
+    def photos(self):
+        '''Get the photos associated with this checkin. Assumes photo exists'''
+        return Photo(self.authenticator, self.data['response']['checkin']['venue'])
