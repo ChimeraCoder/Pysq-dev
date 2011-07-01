@@ -165,3 +165,45 @@ class Checkin:
     def photos(self):
         '''Get the photos associated with this checkin. Assumes photo exists'''
         return Photo(self.authenticator, self.data['response']['checkin']['venue'])
+
+
+class Venue:
+    def __init__(self, authenticator, json_query):
+        self.authenticator = authenticator
+        #####
+
+
+    def id(self):
+        return self.data['response']['venue']['id']
+
+
+    def name(self):
+        return self.data['response']['venue']['name']
+
+    def contact(self):
+        return self.data['response']['venue']['contact']
+
+    def location(self):
+        return Location(self.data['response']['venue']['location'])
+
+
+    def verified(self):
+        return self.data['response']['venue']['verified']
+
+    def checkinsCount(self):
+        return self.data['response']['venue']['stats']['checkinsCount']
+
+        
+    def usersCount(self):
+        return self.data['response']['venue']['stats']['usersCount']
+        
+    def url(self):
+        return self.data['response']['venue']['url']
+        
+        
+
+class Location:
+
+
+
+
