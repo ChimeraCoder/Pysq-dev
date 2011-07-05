@@ -21,51 +21,49 @@ class FSAuthenticator:
         self.access_token = access_token
         return access_token
 
-def checkin(checkin_id):
-        '''Given a checkin id, return the information for that checkin'''
-
+    def auth_param(self):
+        return "?oauth_token=" + self.access_token
 
 class UserFinder:
     def __init__(self, authenticator):
-    '''Given an FSAuthenticator, search for a user'''
+        '''Given an FSAuthenticator, search for a user'''
         self.authenticator = authenticator
 
     def findUser(self, id):
-        #Issue a get request to create and return a new user object
-        pass
-        return #return a new FSUser object
-
+        #Issue a request to create and return a new user object
+        #return a new FSUser object
+        return FSUser(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()))
 
 
 class FSUser:
     
     def __init__(self, authenticator, json_query):
         '''Given a JSON query that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
-        response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
+        #response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
 
-        data = json.loads(response.read())
+        self.data = json.loads(json_query.read())
         self.authenticator = authenticator 
 
-    def fetch(self):
-        self.data = json.loads(########)
-
-        #TODO cache this
     def first_name(self):
         '''Return the user's first name'''
         return self.data['response']['user']['firstName']
 
     def last_name(self):
+        '''Return the user's last name'''
         return self.data['response']['user']['lastName']
 
     def gender(self):
+        '''Return the user's gender'''
         return self.data['response']['user']['gender']
 
     def twitter(self):
         '''Load the user's Twitter contact information'''
+        #TODO fix case where Twitter is not linked
         return self.data['response']['user']['contact']['twitter']
  
     def facebook(self):
         '''Load the user's Twitter contact information'''
+        #TODO fix case where Facebook is not linked
         return self.data['response']['user']['contact']['facebook']
 
     def phone(self):
@@ -77,30 +75,26 @@ class FSUser:
         return self.data['response']['user']['badges']['count']
 
     #def all_checkins(self):
-        '''Return the user's checkins'''
+    #    '''Return the user's checkins'''
 
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
         return self.data['response']['user']['mayorships']['count']
 
-
     def mayorships(self):
         '''Returns the mayorships that the user has earned'''
         return self.data['response']['user']['mayorships']['items'] 
-
 
     def checkins_count(self):
         '''Returns the number of checkins'''
         return self.data['response']['user']['checkins']['count']
 
-
     
-
 
     #def last_checkin(self):
 
     def following(self):
-        return self.data['response']['user']['following'['count']  
+        return self.data['response']['user']['following']['count']  
 
     def tips_count(self):
         '''Return the number of tips that the user has left'''
@@ -153,7 +147,7 @@ class Checkin:
 
     def venue(self):
         '''Return the Venue object associated with the checkin'''
-        return Venue(self.authenticator, self.data['response']['checkin']['venue']
+        return Venue(self.authenticator, self.data['response']['checkin']['venue'])
 
     def hasPhotos(self):
         '''Return True if any photos are associated with this checkin'''
@@ -167,12 +161,9 @@ class Checkin:
 class Venue:
     def __init__(self, authenticator, json_query):
         self.authenticator = authenticator
-        #####
-
 
     def id(self):
         return self.data['response']['venue']['id']
-
 
     def name(self):
         return self.data['response']['venue']['name']
@@ -183,14 +174,12 @@ class Venue:
     def location(self):
         return Location(self.data['response']['venue']['location'])
 
-
     def verified(self):
         return self.data['response']['venue']['verified']
 
     def checkinsCount(self):
         return self.data['response']['venue']['stats']['checkinsCount']
 
-        
     def usersCount(self):
         return self.data['response']['venue']['stats']['usersCount']
         
@@ -203,8 +192,6 @@ class Photo:
 
     def __init__(self, authenticator, json_query):
         self.authenticator = authenticator
-        aasdasfa
-
 
     def id(self):
         return self.data['response']['photo']['id']
@@ -231,11 +218,7 @@ class Tip:
     def text(self):
         return self.data['response']['tip']['text']
 
-
-
-
-
-
-
+    def status(self):
+        return self.data['response']['tip']['status']
 
 
