@@ -3,7 +3,6 @@ import urllib2
 import json
 import httplib
 
-
 class FSAuthenticator:
     def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
@@ -41,6 +40,7 @@ class FSUser:
         '''Given a JSON query that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
         #response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
 
+        #TODO have this accept string instead of query
         self.data = json.loads(json_query.read())
         self.authenticator = authenticator 
 
@@ -68,6 +68,7 @@ class FSUser:
 
     def phone(self):
         '''Load the user's Twitter contact information'''
+        #TODO fix case where phone is not given
         return self.data['response']['user']['contact']['phone']
 
     def badge_count(self):
@@ -89,10 +90,11 @@ class FSUser:
         '''Returns the number of checkins'''
         return self.data['response']['user']['checkins']['count']
 
+    def last_checkin(self):
+        '''Return the most recent checkin of the user'''
+        checkin_data = self.data['response']['user']['checkins']['items'][-1]
+        return Checkin(self.authenticator, checkin_data)
     
-
-    #def last_checkin(self):
-
     def following(self):
         return self.data['response']['user']['following']['count']  
 
@@ -110,81 +112,82 @@ class FSUser:
         return self.data['response']['user']['scores']['max']
 
 
-
-
-
-
 class Checkin:
     
     def __init__(self, authenticator, json_query):
     
         #TODO #FIXME
-        response 
         self.authenticator = authenticator
+        self.data = json_query
 
     def id(self):
         '''Return the id of the checkin'''
-        return self.data['response']['checkin']['id']
+        return self.data['id']
 
     def createdAt(self):
         '''Return the Unix timestamp of the checkin'''
-        return self.data['response']['checkin']['createdAt']
+        return self.data['createdAt']
 
     def timeZone(self):
         '''Return the timezone of the checkin'''
-        return self.data['response']['checkin']['timeZone']
+        return self.data['timeZone']
 
     def type(self):
         '''Return the type of the checkin'''
-        return self.data['response']['checkin']['type']
+        return self.data['type']
 
     def hasShout(self):
-        return self.type() == "shout"
+        '''Return True if the checkin has a shout'''
+        return ('shout' in self.data)
 
     def shout(self):
         '''Return any shout associated with the checkin'''
-        return self.data['response']['checkin']['shout']
+        return self.data['shout']
 
     def venue(self):
         '''Return the Venue object associated with the checkin'''
-        return Venue(self.authenticator, self.data['response']['checkin']['venue'])
+        return Venue(self.authenticator, self.data['venue'])
 
     def hasPhotos(self):
         '''Return True if any photos are associated with this checkin'''
-        return self.data['response']['checkin']['photos']['count'] > 0
+        return ('photos' in self.data) 
 
     def photos(self):
         '''Get the photos associated with this checkin. Assumes photo exists'''
-        return Photo(self.authenticator, self.data['response']['checkin']['venue'])
+        #TODO fix thix
+        #return Photo(self.authenticator, self.data['venue'])
 
 
 class Venue:
     def __init__(self, authenticator, json_query):
         self.authenticator = authenticator
+        self.data = json_query
 
     def id(self):
-        return self.data['response']['venue']['id']
+        return self.data['id']
 
     def name(self):
-        return self.data['response']['venue']['name']
+        return self.data['name']
 
     def contact(self):
-        return self.data['response']['venue']['contact']
+        return self.data['contact']
 
     def location(self):
-        return Location(self.data['response']['venue']['location'])
+        #TODO add Location
+        return Location(self.data['location'])
 
     def verified(self):
-        return self.data['response']['venue']['verified']
+        return self.data['verified']
 
     def checkinsCount(self):
-        return self.data['response']['venue']['stats']['checkinsCount']
+        return self.data['stats']['checkinsCount']
 
     def usersCount(self):
-        return self.data['response']['venue']['stats']['usersCount']
+        return self.data['stats']['usersCount']
         
     def url(self):
-        return self.data['response']['venue']['url']
+        #FIXME url may not be defined
+        return self.data['url']
         
        
 
