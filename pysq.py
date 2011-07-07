@@ -49,11 +49,11 @@ class UserFinder:
 
     def findUser(self, id):
         #Issue a request to create and return a new user object
-        #return a new FSUser object
-        return FSUser(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()))
+        #return a new User object
+        return User(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()))
 
 
-class FSUser:
+class User:
     
     def __init__(self, authenticator, json_query):
         '''Given a JSON query that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
@@ -102,7 +102,7 @@ class FSUser:
         '''Returns the number of checkins'''
         return self.data['response']['user']['checkins']['count']
 
-    def get_checkins(self, params):
+    def get_checkins(self, params = {}):
         json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
         checkins = [Checkin(self.authenticator, object) for object in json_objects]
         return checkins
