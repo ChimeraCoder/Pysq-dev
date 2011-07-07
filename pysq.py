@@ -10,15 +10,14 @@ class FSAuthenticator:
         self.redirect_uri = redirect_uri #same as callback_uri
         self.access_token = None 
 
-    def authorize_uri():
-        return 'https://foursquare.com/oauth2/authenticate?client_id=' + CLIENT_ID + '&response_type=code&redirect_uri='+ REDIRECT_URI
+    def authorize_uri(self):
+        return 'https://foursquare.com/oauth2/authenticate?client_id=' + self.client_id + '&response_type=code&redirect_uri='+ self.redirect_uri    
 
-    def get_token(code):
+    def set_token(self, code):
         #make http request to foursquare to get the access token from the code
-        urllib2.open("https://foursquare.com/oauth2/access_token?client_id=YOUR_CLIENT_ID&client_secret=YOUR_CLIENT_SECRET&grant_type=authorization_code&redirect_uri=YOUR_REGISTERED_REDIRECT_URI&code=CODE")
         #Response will contain access token
-        self.access_token = access_token
-        return access_token
+        self.access_token = json.load(urllib2.urlopen("https://foursquare.com/oauth2/access_token?client_id=" + self.client_id + "&client_secret=" + self.client_secret +  "&grant_type=authorization_code&redirect_uri=" + self.redirect_uri + "&code=" + code))['access_token']
+
 
     def auth_param(self):
         return "?oauth_token=" + self.access_token
@@ -114,11 +113,11 @@ class FSUser:
 
 class Checkin:
     
-    def __init__(self, authenticator, json_query):
+    def __init__(self, authenticator, json_string):
     
         #TODO #FIXME
         self.authenticator = authenticator
-        self.data = json_query
+        self.data = json_string
 
     def id(self):
         '''Return the id of the checkin'''
@@ -159,9 +158,9 @@ class Checkin:
 
 
 class Venue:
-    def __init__(self, authenticator, json_query):
+    def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
-        self.data = json_query
+        self.data = json_string
 
     def id(self):
         return self.data['id']
@@ -193,8 +192,9 @@ class Venue:
 
 class Photo:
 
-    def __init__(self, authenticator, json_query):
+    def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
+        self.data = json_string
 
     def id(self):
         return self.data['response']['photo']['id']
@@ -209,8 +209,10 @@ class Photo:
 
 class Tip:
 
-    def __init__(self, authenticator, json_query):
+    def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
+        self.data = json_string
+
 
     def id(self):
         return self.data['response']['tip']['id']
