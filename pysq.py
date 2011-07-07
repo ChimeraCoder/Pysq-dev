@@ -3,6 +3,9 @@ import urllib2
 import json
 import httplib
 
+MAX_CHECKIN_REQUEST = 250
+
+
 class FSAuthenticator:
     def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
@@ -23,10 +26,21 @@ class FSAuthenticator:
         #The oauth_token should always be the first parameter passed
         return "?oauth_token=" + self.access_token
 
-    def query(self, path):
-        url = "https://api.foursquare.com/v2/" + path + self.auth_param()
+    def query(self, path, parameters=None):
+        if parameters == None:
+            parameters = {}
+    
+        #parameters should be input as a dictionary
+        url = "https://api.foursquare.com/v2/" + path + self.auth_param() + self.expand_params(parameters)
+        print(url)
         return json.load(urllib2.urlopen(url))['response']
 
+    def expand_params(self, parameters):
+        '''Given a dictionary of parameters, return the substring that corresponds to those parameters in a GET request'''
+        result = ""
+        for key in parameters:
+            result += "&" + str(key) + "=" + str(parameters[key])
+        return result
 
 class UserFinder:
     def __init__(self, authenticator):
@@ -84,14 +98,25 @@ class FSUser:
         '''Return the number of badgers that the user has earned'''
         return self.data['response']['user']['badges']['count']
 
-    def get_checkins(self):
-        json_objects = self.authenticator.query("users/" + self.id() + "/checkins")['checkins']['items']
+    def get_checkins(self, params):
+        json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
         checkins = [Checkin(self.authenticator, object) for object in json_objects]
         return checkins
 
 
-    #def all_checkins(self):
-    #    '''Return the user's checkins'''
+    def all_checkins(self):
+        '''Return the user's checkins'''
+        count = MAX_CHECKIN_REQUEST
+        offset = 0
+        checkins = []
+        #When count is not 250, there are no more checkins that need to be queried
+        while count == 250:
+            checkins.extend(self.get_checkins({"limit" : count, "offset" : offset}))
+            count = len(checkins)
+            offset += count
+        
+        return checkins
+
 
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
