@@ -98,11 +98,14 @@ class FSUser:
         '''Return the number of badgers that the user has earned'''
         return self.data['response']['user']['badges']['count']
 
+    def checkins_count(self):
+        '''Returns the number of checkins'''
+        return self.data['response']['user']['checkins']['count']
+
     def get_checkins(self, params):
         json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
         checkins = [Checkin(self.authenticator, object) for object in json_objects]
         return checkins
-
 
     def all_checkins(self):
         '''Return the user's checkins'''
@@ -117,7 +120,25 @@ class FSUser:
         
         return checkins
 
+    def last_checkin(self):
+        '''Return the most recent checkin of the user'''
+        checkin_data = self.data['response']['user']['checkins']['items'][-1]
+        return Checkin(self.authenticator, checkin_data)
 
+    def checkins_here(self):
+        '''Return the checkins at the last venue visited. (This will only work for friends of the authenticating user)'''
+        last_checkin_id = self.last_checkin().venue().id()
+        #Get the checkin JSON for the most recently visited venue
+        checkin_items = self.authenticator.query("venues/" + last_checkin_id + "/herenow")
+        checkin_objects = []
+        for checkin in checkin_items:
+            try:
+                result = self.authenticator.query("checkins/" + checkin["id"])['checkin']
+                checkin_objects.add(Checkin(self.authenticator, result))
+            #Skip over checkins which we are not authorized to access
+            except:
+                continue
+    
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
         return self.data['response']['user']['mayorships']['count']
@@ -126,15 +147,6 @@ class FSUser:
         '''Returns the mayorships that the user has earned'''
         return self.data['response']['user']['mayorships']['items'] 
 
-    def checkins_count(self):
-        '''Returns the number of checkins'''
-        return self.data['response']['user']['checkins']['count']
-
-    def last_checkin(self):
-        '''Return the most recent checkin of the user'''
-        checkin_data = self.data['response']['user']['checkins']['items'][-1]
-        return Checkin(self.authenticator, checkin_data)
-    
     def following(self):
         return self.data['response']['user']['following']['count']  
 
@@ -151,6 +163,15 @@ class FSUser:
     def max_scores(self):
         return self.data['response']['user']['scores']['max']
 
+    def friends(self):
+        '''Return a list of the user's friends'''
+        response = self.authenticator.query("users/" + self.id() + "/friends")["friends"]["items"]
+        return [User(self.authenticator, element) for element in response]
+
+    def tips(self):
+
+        response = self.authenticator.query("users/" + self.id() + "/tips")['tips']['items']
+        return [Tip(self.authenticator, element) for element in response]
 
 class Checkin:
     
@@ -253,7 +274,6 @@ class Tip:
     def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
         self.data = json_string
-
 
     def id(self):
         return self.data['response']['tip']['id']
