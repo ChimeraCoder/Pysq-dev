@@ -16,11 +16,17 @@ class FSAuthenticator:
     def set_token(self, code):
         #make http request to foursquare to get the access token from the code
         #Response will contain access token
-        self.access_token = json.load(urllib2.urlopen("https://foursquare.com/oauth2/access_token?client_id=" + self.client_id + "&client_secret=" + self.client_secret +  "&grant_type=authorization_code&redirect_uri=" + self.redirect_uri + "&code=" + code))['access_token']
-
+        url = "https://foursquare.com/oauth2/access_token?client_id=" + self.client_id + "&client_secret=" + self.client_secret +  "&grant_type=authorization_code&redirect_uri=" + self.redirect_uri + "&code=" + code
+        self.access_token = json.load(urllib2.urlopen(url))['access_token']
 
     def auth_param(self):
+        #The oauth_token should always be the first parameter passed
         return "?oauth_token=" + self.access_token
+
+    def query(self, path):
+        url = "https://api.foursquare.com/v2/" + path + self.auth_param()
+        return json.load(urllib2.urlopen(url))['response']
+
 
 class UserFinder:
     def __init__(self, authenticator):
@@ -42,6 +48,10 @@ class FSUser:
         #TODO have this accept string instead of query
         self.data = json.loads(json_query.read())
         self.authenticator = authenticator 
+
+    def id(self):
+        '''Return the user's id'''
+        return self.data['response']['user']['id']
 
     def first_name(self):
         '''Return the user's first name'''
@@ -73,6 +83,12 @@ class FSUser:
     def badge_count(self):
         '''Return the number of badgers that the user has earned'''
         return self.data['response']['user']['badges']['count']
+
+    def get_checkins(self):
+        json_objects = self.authenticator.query("users/" + self.id() + "/checkins")['checkins']['items']
+        checkins = [Checkin(self.authenticator, object) for object in json_objects]
+        return checkins
+
 
     #def all_checkins(self):
     #    '''Return the user's checkins'''
@@ -226,4 +242,15 @@ class Tip:
     def status(self):
         return self.data['response']['tip']['status']
 
+if __name__ == '__main__':
+    print("redefining")
+    authenticator = FSAuthenticator("D0PJDUVDEWECQ3ZM3JMAR13G20RLPPUO4OJLMXNGGNYUCAE1", "2YIJX5T1IQC1QCU15J30WYG2X3SKGFNFH35IDQBIMJZVXTX2", "http://localhost.com:8080")
+
+    authenticator.access_token = "XNC12SB5HY4UFBGEDWXHVSOKEFUNLEP3WR2AZSXX4GC5KQNB"
+
+    finder = UserFinder(authenticator)
+
+    my_id = "10867705" 
+    
+    my_user = finder.findUser(my_id)
 
