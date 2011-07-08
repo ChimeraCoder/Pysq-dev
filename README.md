@@ -19,11 +19,11 @@ Pysq provides a wrapper for authentication through OAuth. First, register your a
 
 Then, redirect your user to the uri that the FSAuthenticator object generates:
 
-> >>>uri = authenticator.authorize_uri()
+> uri = authenticator.authorize_uri()
 
 The user will sign in with his/her Foursquare credentials, and Foursquare will redirect back to your registered page (redirect_uri), with a code passed as a GET parameter. Retrieve this code and pass it in to the set_token method:
 
-> >>>authenticator.set_token(code)
+> authenticator.set_token(code)
 
 You are now ready to begin making queries that this user is authorized to make!
 
@@ -33,8 +33,8 @@ Querying Users
 
 To obtain a User object, use the UserFinder object.
 
-> >>>finder = UserFinder(authenticator)
+> finder = UserFinder(authenticator)
 
-> >>>my_user = finder.findUser(id)
+> my_user = finder.findUser(id)
 
 
