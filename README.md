@@ -13,7 +13,7 @@ Use
 
 Pysq provides a wrapper for authentication through OAuth. First, register your application on the Foursquare developer homepage to receive your client_id and client_secret values. Then, authenticate using the FSAuthenticator class. (Note that redirect_uri is the uri for your application, which you register with Foursquare).
 
->  >>>authenticator = FSAuthenticator(client_id, client_secret, redirect_uri)
+> authenticator = FSAuthenticator(client_id, client_secret, redirect_uri)
 
 
 
