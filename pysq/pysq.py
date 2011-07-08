@@ -1,7 +1,6 @@
 from __future__ import division, print_function
 import urllib2
 import json
-import httplib
 
 MAX_CHECKIN_REQUEST = 250
 
