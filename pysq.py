@@ -50,7 +50,7 @@ class UserFinder:
     def findUser(self, id):
         #Issue a request to create and return a new user object
         #return a new User object
-        return User(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()))
+        return User(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()).read())
 
 
 class User:
@@ -59,8 +59,7 @@ class User:
         '''Given a JSON query that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
         #response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
 
-        #TODO have this accept string instead of query
-        self.data = json.loads(json_query.read())
+        self.data = json.loads(json_query)
         self.authenticator = authenticator 
 
     def id(self):
@@ -137,6 +136,7 @@ class User:
                 checkin_objects.add(Checkin(self.authenticator, result))
             #Skip over checkins which we are not authorized to access
             except:
+                print(checkin["id"] + " could not be queried)
                 continue
     
     def mayorships_count(self):
@@ -147,7 +147,8 @@ class User:
         '''Returns the mayorships that the user has earned'''
         return self.data['response']['user']['mayorships']['items'] 
 
-    def following(self):
+    def following_count(self):
+        '''Return the number of users that the user is following'''
         return self.data['response']['user']['following']['count']  
 
     def tips_count(self):
@@ -259,13 +260,13 @@ class Photo:
         self.data = json_string
 
     def id(self):
-        return self.data['response']['photo']['id']
+        return self.data['id']
 
     def createdAd(self):
-        return self.data['response']['photo']['createdAd']
+        return self.data['createdAd']
 
     def url(self):
-        return self.data['response']['photo']['url']
+        return self.data['url']
 
 
 
@@ -276,16 +277,16 @@ class Tip:
         self.data = json_string
 
     def id(self):
-        return self.data['response']['tip']['id']
+        return self.data['id']
 
     def createdAt(self):
-        return self.data['response']['tip']['createdAt']
+        return self.data['createdAt']
 
     def text(self):
-        return self.data['response']['tip']['text']
+        return self.data['text']
 
     def status(self):
-        return self.data['response']['tip']['status']
+        return self.data['status']
 
 if __name__ == '__main__':
     print("redefining")
