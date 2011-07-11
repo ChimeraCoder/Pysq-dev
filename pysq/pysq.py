@@ -1,6 +1,7 @@
 from __future__ import division, print_function
 import urllib2
 import json
+import time
 
 MAX_CHECKIN_REQUEST = 250
 
@@ -13,23 +14,26 @@ class FSAuthenticator:
         self.access_token = None 
 
     def authorize_uri(self):
+        '''Return the URI that directs the user to authenticate with foursquare'''
         return 'https://foursquare.com/oauth2/authenticate?client_id=' + self.client_id + '&response_type=code&redirect_uri='+ self.redirect_uri    
 
     def set_token(self, code):
+        '''Given the temporary code, make a request to obtain the access token'''
         #make http request to foursquare to get the access token from the code
         #Response will contain access token
         url = "https://foursquare.com/oauth2/access_token?client_id=" + self.client_id + "&client_secret=" + self.client_secret +  "&grant_type=authorization_code&redirect_uri=" + self.redirect_uri + "&code=" + code
         self.access_token = json.load(urllib2.urlopen(url))['access_token']
 
     def auth_param(self):
+        '''Return the authorization parameter string'''
         #The oauth_token should always be the first parameter passed
         return "?oauth_token=" + self.access_token
 
     def query(self, path, parameters=None):
+        '''Given a query path and parameters, return the json response to the query'''
         if parameters == None:
             parameters = {}
-    
-        #parameters should be input as a dictionary
+        #parameters should be given as a dictionary
         url = "https://api.foursquare.com/v2/" + path + self.auth_param() + self.expand_params(parameters)
         print(url)
         return json.load(urllib2.urlopen(url))['response']
@@ -47,60 +51,66 @@ class UserFinder:
         self.authenticator = authenticator
 
     def findUser(self, id):
+        '''Retrieve the User associated with the given id. Raise an error if the authenticator is not authorized to access the User'''
         #Issue a request to create and return a new user object
         #return a new User object
-        return User(self.authenticator, urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()).read())
+        
+        json_result =  urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()).read()
+        return User(self.authenticator, json_result['response']['user'])
 
 
 class User:
     
-    def __init__(self, authenticator, json_query):
-        '''Given a JSON query that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
+    def __init__(self, authenticator, json_string):
+        '''Given a JSON string that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
         #response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
 
-        self.data = json.loads(json_query)
+        self.data = json.loads(json_string)
         self.authenticator = authenticator 
+        self.time = time.time()
 
     def id(self):
         '''Return the user's id'''
-        return self.data['response']['user']['id']
+        return self.data['id']
 
     def first_name(self):
         '''Return the user's first name'''
-        return self.data['response']['user']['firstName']
+        return self.data['firstName']
 
     def last_name(self):
         '''Return the user's last name'''
-        return self.data['response']['user']['lastName']
+        return self.data['lastName']
 
     def gender(self):
         '''Return the user's gender'''
-        return self.data['response']['user']['gender']
+        return self.data['gender']
+
+    def email(self):
+        '''Return the user's email address'''
+        return self.data['contact']['email']
 
     def twitter(self):
-        '''Load the user's Twitter contact information'''
-        #TODO fix case where Twitter is not linked
-        return self.data['response']['user']['contact']['twitter']
+        '''Return the user's Twitter contact information'''
+        return self.data['contact']['twitter']
  
     def facebook(self):
-        '''Load the user's Twitter contact information'''
-        #TODO fix case where Facebook is not linked
-        return self.data['response']['user']['contact']['facebook']
+        '''Return the user's Twitter contact information'''
+        return self.data['contact']['facebook']
 
     def phone(self):
-        '''Load the user's Twitter contact information'''
-        #TODO fix case where phone is not given
-        return self.data['response']['user']['contact']['phone']
+        '''Return the user's Twitter contact information'''
+        return self.data['contact']['phone']
 
-    def badge_count(self):
+    def badges_count(self):
         '''Return the number of badgers that the user has earned'''
-        return self.data['response']['user']['badges']['count']
+        return self.data['badges']['count']
 
     def checkins_count(self):
-        '''Returns the number of checkins'''
-        return self.data['response']['user']['checkins']['count']
+        '''Return the number of checkins'''
+        return self.data['checkins']['count']
 
     def get_checkins(self, params = {}):
+        '''Return the user's recent checkins. Parameters can be passed as a dictionary'''
         json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
         checkins = [Checkin(self.authenticator, object) for object in json_objects]
         return checkins
@@ -120,7 +130,7 @@ class User:
 
     def last_checkin(self):
         '''Return the most recent checkin of the user'''
-        checkin_data = self.data['response']['user']['checkins']['items'][-1]
+        checkin_data = self.data['checkins']['items'][-1]
         return Checkin(self.authenticator, checkin_data)
 
     def checkins_here(self):
@@ -135,33 +145,33 @@ class User:
                 checkin_objects.add(Checkin(self.authenticator, result))
             #Skip over checkins which we are not authorized to access
             except:
-                print(checkin["id"] + " could not be queried)
+                print(checkin["id"] + " could not be queried")
                 continue
     
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
-        return self.data['response']['user']['mayorships']['count']
+        return self.data['mayorships']['count']
 
     def mayorships(self):
         '''Returns the mayorships that the user has earned'''
-        return self.data['response']['user']['mayorships']['items'] 
+        return self.data['mayorships']['items'] 
 
     def following_count(self):
         '''Return the number of users that the user is following'''
-        return self.data['response']['user']['following']['count']  
+        return self.data['following']['count']  
 
     def tips_count(self):
         '''Return the number of tips that the user has left'''
-        return self.data['response']['user']['tips']['count']
+        return self.data['tips']['count']
 
     def todos_count(self):
-        return self.data['response']['user']['todos']['count']
+        return self.data['todos']['count']
 
     def recent_scores(self):
-        return self.data['response']['user']['scores']['recent']
+        return self.data['scores']['recent']
 
     def max_scores(self):
-        return self.data['response']['user']['scores']['max']
+        return self.data['scores']['max']
 
     def friends(self):
         '''Return a list of the user's friends'''
@@ -169,17 +179,23 @@ class User:
         return [User(self.authenticator, element) for element in response]
 
     def tips(self):
-
+        '''Return a list of the user's tips'''
         response = self.authenticator.query("users/" + self.id() + "/tips")['tips']['items']
         return [Tip(self.authenticator, element) for element in response]
+
+    def photo(self):
+        '''Return the uri of the photo (icon) associated with the user'''
+        return self.data['photo']
+
 
 class Checkin:
     
     def __init__(self, authenticator, json_string):
     
-        #TODO #FIXME
         self.authenticator = authenticator
         self.data = json_string
+        self.time = time.time()
+
 
     def id(self):
         '''Return the id of the checkin'''
@@ -213,32 +229,41 @@ class Checkin:
         '''Return True if any photos are associated with this checkin'''
         return ('photos' in self.data) 
 
+    def photos_count(self):
+        '''Return the number of photos associated with this checkin'''
+        return self.data['photos']['count']
+
     def photos(self):
         '''Get the photos associated with this checkin. Assumes photo exists'''
-        #TODO fix thix
-        #return Photo(self.authenticator, self.data['venue'])
-
+        photos_list = [Photo(self.authenticator, photo_json) for photo_json in self.data['photos']['items']]
+        return photos_list
 
 class Venue:
     def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
         self.data = json_string
+        self.time = time.time()
+
 
     def id(self):
+        '''Return the venue id'''
         return self.data['id']
 
     def name(self):
+        '''Return the name of the venue'''
         return self.data['name']
 
     def contact(self):
+        '''Return the contact information for the venue'''
         return self.data['contact']
 
     def location(self):
-        #TODO add Location
+        '''Return the location of the venue'''
         return Location(self.data['location'])
 
     def verified(self):
-        return self.data['verified']
+        '''Return True if the venue has been verified'''
+        return self.data['verified'] == 'true'
 
     def checkinsCount(self):
         return self.data['stats']['checkinsCount']
@@ -247,24 +272,38 @@ class Venue:
         return self.data['stats']['usersCount']
         
     def url(self):
-        #FIXME url may not be defined
+        '''Return the url of the venue'''
         return self.data['url']
-        
+   
+    def here_now_count(self):
+        '''Return the number of users at the venue'''
+        return self.data['hereNow']['count']
        
+    def mayor(self):
+        '''Return the mayor of the venue'''
+        return User(self.data['mayor']['user'])
+
+    def tips_count(self):
+        '''Return the number of tips'''
+        return self.data['tips']['count']
 
 class Photo:
 
     def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
         self.data = json_string
+        self.time = time.time()
 
     def id(self):
+        '''Return the id of the photo'''
         return self.data['id']
 
-    def createdAd(self):
-        return self.data['createdAd']
+    def createdAt(self):
+        '''Return the UNIX time at which the photo was created'''
+        return self.data['createdAt']
 
     def url(self):
+        '''Return the url for the photo'''
         return self.data['url']
 
 
@@ -274,18 +313,19 @@ class Tip:
     def __init__(self, authenticator, json_string):
         self.authenticator = authenticator
         self.data = json_string
+        self.time = time.time()
 
     def id(self):
+        '''Return the id of the tip'''
         return self.data['id']
 
     def createdAt(self):
+        '''Return the UNIX time at which the tip was created'''
         return self.data['createdAt']
 
     def text(self):
+        '''Return the text of the tip'''
         return self.data['text']
-
-    def status(self):
-        return self.data['status']
 
 if __name__ == '__main__':
     print("redefining")
