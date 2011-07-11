@@ -55,7 +55,7 @@ class UserFinder:
         #Issue a request to create and return a new user object
         #return a new User object
         
-        json_result =  urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()).read()
+        json_result =  json.load(urllib2.urlopen("https://api.foursquare.com/v2/users/" + str(id) + self.authenticator.auth_param()))
         return User(self.authenticator, json_result['response']['user'])
 
 
@@ -65,7 +65,7 @@ class User:
         '''Given a JSON string that describes the user, store the JSON for use at a later date. Also store the authenticator object for future queries'''
         #response = urllib2.urlopen('https://foursquare.com/oauth2/access_token?client_id=' + CLIENT_ID + '&client_secret=' + CLIENT_SECRET + '&grant_type=authorization_code&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fauth&code=' + code)
 
-        self.data = json.loads(json_string)
+        self.data = json_string
         self.authenticator = authenticator 
         self.time = time.time()
 
@@ -157,7 +157,6 @@ class User:
                 checkin_objects.add(Checkin(self.authenticator, result))
             #Skip over checkins which we are not authorized to access
             except:
-                print(checkin["id"] + " could not be queried")
                 continue
     
     def mayorships_count(self):
@@ -248,7 +247,7 @@ class Checkin:
 
     def hasPhotos(self):
         '''Return True if any photos are associated with this checkin'''
-        return ('photos' in self.data) 
+        return self.photos_count == 0 
 
     def photos_count(self):
         '''Return the number of photos associated with this checkin'''
@@ -282,10 +281,10 @@ class Venue:
         try: return self.data['contact']
         except KeyError: return None
 
-    def location(self):
-        '''Return the location of the venue'''
-        try: return Location(self.data['location'])
-        except KeyError: return None
+    #def location(self):
+    #    '''Return the location of the venue'''
+    #    try: return Location(self.data['location'])
+    #    except KeyError: return None
 
     def verified(self):
         '''Return True if the venue has been verified'''
