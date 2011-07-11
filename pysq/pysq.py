@@ -71,47 +71,58 @@ class User:
 
     def id(self):
         '''Return the user's id'''
-        return self.data['id']
+        try: return self.data['id']
+        except KeyError: return None
 
     def first_name(self):
         '''Return the user's first name'''
-        return self.data['firstName']
+        try: return self.data['firstName']
+        except KeyError: return None
 
     def last_name(self):
         '''Return the user's last name'''
-        return self.data['lastName']
+        try: return self.data['lastName']
+        except KeyError: return None
 
     def gender(self):
         '''Return the user's gender'''
-        return self.data['gender']
+        try: return self.data['gender']
+        except KeyError: return None
 
     def email(self):
         '''Return the user's email address'''
-        return self.data['contact']['email']
+        try: return self.data['contact']['email']
+        except KeyError: return None
 
     def twitter(self):
         '''Return the user's Twitter contact information'''
-        return self.data['contact']['twitter']
- 
+        try: return self.data['contact']['twitter']
+        except KeyError: return None
+
     def facebook(self):
         '''Return the user's Twitter contact information'''
-        return self.data['contact']['facebook']
-
+        try: return self.data['contact']['facebook']
+        except KeyError: return None
+        
     def phone(self):
         '''Return the user's Twitter contact information'''
-        return self.data['contact']['phone']
+        try: return self.data['contact']['phone']
+        except KeyError: return None
 
     def badges_count(self):
         '''Return the number of badgers that the user has earned'''
-        return self.data['badges']['count']
+        try: return self.data['badges']['count']
+        except KeyError: return None
 
     def checkins_count(self):
         '''Return the number of checkins'''
-        return self.data['checkins']['count']
+        try: return self.data['checkins']['count']
+        except KeyError: return None
 
     def get_checkins(self, params = {}):
         '''Return the user's recent checkins. Parameters can be passed as a dictionary'''
-        json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
+        try: json_objects = self.authenticator.query("users/" + self.id() + "/checkins", params)['checkins']['items']
+        except KeyError: return None
         checkins = [Checkin(self.authenticator, object) for object in json_objects]
         return checkins
 
@@ -130,7 +141,8 @@ class User:
 
     def last_checkin(self):
         '''Return the most recent checkin of the user'''
-        checkin_data = self.data['checkins']['items'][-1]
+        try: checkin_data = self.data['checkins']['items'][-1]
+        except KeyError: return None
         return Checkin(self.authenticator, checkin_data)
 
     def checkins_here(self):
@@ -150,28 +162,35 @@ class User:
     
     def mayorships_count(self):
         '''Returns the number of mayorships that the user has earned'''
-        return self.data['mayorships']['count']
+        try: return self.data['mayorships']['count']
+        except KeyError: return None
 
     def mayorships(self):
         '''Returns the mayorships that the user has earned'''
-        return self.data['mayorships']['items'] 
+        try: return self.data['mayorships']['items'] 
+        except KeyError: return None
 
     def following_count(self):
         '''Return the number of users that the user is following'''
-        return self.data['following']['count']  
+        try: return self.data['following']['count']  
+        except KeyError: return None
 
     def tips_count(self):
         '''Return the number of tips that the user has left'''
-        return self.data['tips']['count']
+        try: return self.data['tips']['count']
+        except KeyError: return None
 
     def todos_count(self):
-        return self.data['todos']['count']
+        try: return self.data['todos']['count']
+        except KeyError: return None
 
     def recent_scores(self):
-        return self.data['scores']['recent']
+        try: return self.data['scores']['recent']
+        except KeyError: return None
 
     def max_scores(self):
-        return self.data['scores']['max']
+        try: return self.data['scores']['max']
+        except KeyError: return None
 
     def friends(self):
         '''Return a list of the user's friends'''
@@ -185,7 +204,8 @@ class User:
 
     def photo(self):
         '''Return the uri of the photo (icon) associated with the user'''
-        return self.data['photo']
+        try: return self.data['photo']
+        except KeyError: return None
 
 
 class Checkin:
@@ -219,7 +239,8 @@ class Checkin:
 
     def shout(self):
         '''Return any shout associated with the checkin'''
-        return self.data['shout']
+        try: return self.data['shout']
+        except KeyError: return None
 
     def venue(self):
         '''Return the Venue object associated with the checkin'''
@@ -231,7 +252,8 @@ class Checkin:
 
     def photos_count(self):
         '''Return the number of photos associated with this checkin'''
-        return self.data['photos']['count']
+        try: return self.data['photos']['count']
+        except KeyError: return None
 
     def photos(self):
         '''Get the photos associated with this checkin. Assumes photo exists'''
@@ -247,45 +269,56 @@ class Venue:
 
     def id(self):
         '''Return the venue id'''
-        return self.data['id']
+        try: return self.data['id']
+        except KeyError: return None
 
     def name(self):
         '''Return the name of the venue'''
-        return self.data['name']
+        try: return self.data['name']
+        except KeyError: return None
 
     def contact(self):
         '''Return the contact information for the venue'''
-        return self.data['contact']
+        try: return self.data['contact']
+        except KeyError: return None
 
     def location(self):
         '''Return the location of the venue'''
-        return Location(self.data['location'])
+        try: return Location(self.data['location'])
+        except KeyError: return None
 
     def verified(self):
         '''Return True if the venue has been verified'''
-        return self.data['verified'] == 'true'
+        try: return self.data['verified'] == 'true'
+        except KeyError: return None
 
     def checkinsCount(self):
-        return self.data['stats']['checkinsCount']
+        try: return self.data['stats']['checkinsCount']
+        except KeyError: return None
 
     def usersCount(self):
-        return self.data['stats']['usersCount']
+        try: return self.data['stats']['usersCount']
+        except KeyError: return None
         
     def url(self):
         '''Return the url of the venue'''
-        return self.data['url']
+        try: return self.data['url']
+        except KeyError: return None
    
     def here_now_count(self):
         '''Return the number of users at the venue'''
-        return self.data['hereNow']['count']
+        try: return self.data['hereNow']['count']
+        except KeyError: return None
        
     def mayor(self):
         '''Return the mayor of the venue'''
-        return User(self.data['mayor']['user'])
+        try: return User(self.data['mayor']['user'])
+        except KeyError: return None
 
     def tips_count(self):
         '''Return the number of tips'''
-        return self.data['tips']['count']
+        try: return self.data['tips']['count']
+        except KeyError: return None
 
 class Photo:
 
