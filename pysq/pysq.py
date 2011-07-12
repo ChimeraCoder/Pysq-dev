@@ -35,7 +35,6 @@ class FSAuthenticator:
             parameters = {}
         #parameters should be given as a dictionary
         url = "https://api.foursquare.com/v2/" + path + self.auth_param() + self.expand_params(parameters)
-        print(url)
         return json.load(urllib2.urlopen(url))['response']
 
     def expand_params(self, parameters):
@@ -166,8 +165,11 @@ class User:
 
     def mayorships(self):
         '''Returns the mayorships that the user has earned'''
-        try: return self.data['mayorships']['items'] 
+        try: 
+            mayorships_json_list =  self.data['mayorships']['items'] 
         except KeyError: return None
+        return [Venue(self.authenticator, a) for a in mayorships_json_list]
+
 
     def following_count(self):
         '''Return the number of users that the user is following'''
@@ -339,7 +341,6 @@ class Photo:
         return self.data['url']
 
 
-
 class Tip:
 
     def __init__(self, authenticator, json_string):
@@ -350,6 +351,10 @@ class Tip:
     def id(self):
         '''Return the id of the tip'''
         return self.data['id']
+
+    def venue(self):
+        try: return Venue(self.authenticator, self.data['venue'])
+        except: return None
 
     def createdAt(self):
         '''Return the UNIX time at which the tip was created'''
