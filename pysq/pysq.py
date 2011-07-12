@@ -5,7 +5,6 @@ import time
 
 MAX_CHECKIN_REQUEST = 250
 
-
 class FSAuthenticator:
     def __init__(self, client_id, client_secret, redirect_uri):
         self.client_id = client_id
